@@ -22,8 +22,9 @@ api = EntityAPI(data_dir)
 
 # # 2.) Preprocess data
 
-# ## i.) Addresses of interest (ENS Twitter + Tornado + Humanity-Dao)
-addresses, ens_addrs, tornado_addrs, hd_addrs = addresses_of_interest(api)
+# ## i.) Addresses of interest (ENS Twitter + Tornado + Humanity-Dao)y
+# modify for mev
+addresses, arb_addrs, eoa_addrs, mev_addrs = addresses_of_interest(api)
 
 # ## ii.) Interaction data
 cols = ["timeStamp","from","to","hash","gasPrice"]
@@ -92,20 +93,20 @@ filtered["normalized_gas"] = np.log(1+filtered["normalized_gas"])
 
 # A transactions may have multiple recipients. In this case we count these transactions multiple times
 addr_cnts = filtered.groupby("from")["hash"].count().reset_index()
-addr_cnts["is_ens"] = addr_cnts["from"].apply(lambda x: x in ens_addrs).astype("int")
-addr_cnts["is_tornado"] = addr_cnts["from"].apply(lambda x: x in tornado_addrs).astype("int")
-addr_cnts["is_hd"] = addr_cnts["from"].apply(lambda x: x in hd_addrs).astype("int")
+addr_cnts["is_mev"] = addr_cnts["from"].apply(lambda x: x in mev_addrs ).astype("int")
+addr_cnts["is_arb"] = addr_cnts["from"].apply(lambda x: x in arb_addrs).astype("int")
+addr_cnts["is_eoa"] = addr_cnts["from"].apply(lambda x: x in eoa_addrs).astype("int")
 
 df = addr_cnts
 print("All accounts")
 print(df.shape)
-print(df[["is_ens","is_tornado","is_hd"]].sum(axis=0))
+print(df[["mev_addrs","arb_addrs","eoa_addrs"]].sum(axis=0))
 print()
 
 df = addr_cnts[addr_cnts["hash"]>=5]
 print("Accounts with at least 5 sent transactions")
 print(df.shape)
-print(df[["is_ens","is_tornado","is_hd"]].sum(axis=0))
+print(df[["mev_addrs","arb_addrs","eoa_addrs"]].sum(axis=0))
 
 # # 4.) Export preprocessed data
 filtered.to_csv("%s/filtered_data.csv" % output_dir, index=False)
